@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Recruitment Dashboard - Web Call</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 500px;
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        .info {
+            background: #f0f0f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .btn {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .btn:hover { opacity: 0.9; }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        .status.connecting { background: #fef3c7; color: #92400e; }
+        .status.active { background: #d1fae5; color: #065f46; }
+        .status.error { background: #fee2e2; color: #991b1b; }
+        #vapiFrame { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎧 AI Recruitment Call Agent</h1>
+        
+        <div class="info">
+            <strong>📋 Instructions:</strong><br><br>
+            1. Click "Start Web Call" below<br>
+            2. Allow microphone access when prompted<br>
+            3. The AI assistant will start speaking<br>
+            4. Speak naturally to interact<br><br>
+            <strong>Your Credentials:</strong><br>
+            Assistant ID: 4fdc86b0-fe68-4a79-aab3-dff74bc4a0af<br>
+            Public Key: 2da05c24-f577-4109-b877-dca735a0bf9d
+        </div>
+
+        <button class="btn" onclick="startWebCall()">🤖 Start Web Call</button>
+        <button class="btn" onclick="endCall()" style="background: #ef4444;">❌ End Call</button>
+
+        <div id="status"></div>
+
+        <!-- Vapi Web Embed -->
+        <iframe id="vapiFrame" allow="microphone"></iframe>
+    </div>
+
+    <script>
+        const assistantId = '4fdc86b0-fe68-4a79-aab3-dff74bc4a0af';
+        const publicKey = '2da05c24-f577-4109-b877-dca735a0bf9d';
+        let callActive = false;
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + type;
+        }
+
+        function startWebCall() {
+            console.log('Starting web call...');
+            showStatus('🔄 Connecting to AI assistant...', 'connecting');
+
+            // Use Vapi Web Embed
+            const vapiFrame = document.getElementById('vapiFrame');
+            vapiFrame.src = `https://vapi.ai/call?assistantId=${assistantId}&apiKey=${publicKey}`;
+            vapiFrame.style.display = 'block';
+            vapiFrame.style.width = '100%';
+            vapiFrame.style.height = '400px';
+            vapiFrame.style.border = 'none';
+            vapiFrame.style.marginTop = '20px';
+
+            callActive = true;
+            
+            setTimeout(() => {
+                showStatus('✅ Call active - Speak now!', 'active');
+            }, 2000);
+        }
+
+        function endCall() {
+            console.log('Ending call...');
+            const vapiFrame = document.getElementById('vapiFrame');
+            vapiFrame.src = '';
+            vapiFrame.style.display = 'none';
+            callActive = false;
+            showStatus('Call ended', '');
+        }
+
+        console.log('Dashboard ready!');
+        console.log('Assistant ID:', assistantId);
+        console.log('Public Key:', publicKey);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Recruitment Dashboard - Complete</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script type="module">
+        import Vapi from 'https://cdn.jsdelivr.net/npm/@vapi-ai/web@2.3.0/dist/index.js';
+        window.VapiSDK = Vapi;
+        console.log('Vapi SDK loaded successfully');
+    </script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        
+        .container { display: flex; min-height: 100vh; }
+        
+        .sidebar {
+            width: 256px;
+            background-color: #111827;
+            color: white;
+            padding: 24px;
+            min-height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+        }
+        
+        .sidebar h1 { font-size: 24px; font-weight: bold; margin-bottom: 8px; }
+        .sidebar p { color: #9ca3af; font-size: 14px; margin-bottom: 32px; }
+        
+        .nav { display: flex; flex-direction: column; gap: 8px; }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #d1d5db;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .nav-item:hover { background-color: #1f2937; }
+        .nav-item.active { background-color: #2563eb; color: white; }
+        
+        .main { flex: 1; margin-left: 256px; }
+        
+        .header {
+            background-color: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 24px 32px;
+        }
+        
+        .header h1 { font-size: 32px; font-weight: bold; color: #111827; }
+        .header p { color: #6b7280; margin-top: 4px; }
+        
+        .content { padding: 32px; }
+        
+        .page { display: none; }
+        .page.active { display: block; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        
+        .stat-icon { font-size: 32px; margin-bottom: 12px; }
+        .stat-title { color: #6b7280; font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+        .stat-value { font-size: 32px; font-weight: bold; color: #111827; }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 24px;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .card-title { font-size: 20px; font-weight: bold; color: #111827; }
+        
+        .view-all {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        table { width: 100%; border-collapse: collapse; }
+        thead { border-bottom: 1px solid #e5e7eb; }
+        th { text-align: left; padding: 12px 16px; font-weight: 600; color: #374151; font-size: 14px; }
+        td { padding: 12px 16px; border-bottom: 1px solid #f3f4f6; }
+        tbody tr:hover { background-color: #f9fafb; }
+        
+        .candidate-name { color: #2563eb; font-weight: 500; cursor: pointer; }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-approved { background-color: #d1fae5; color: #065f46; }
+        .badge-rejected { background-color: #fee2e2; color: #991b1b; }
+        .badge-pending { background-color: #fef3c7; color: #92400e; }
+        
+        .chart-container { position: relative; height: 300px; margin-top: 20px; }
+        
+        .btn-group { display: flex; gap: 12px; margin-bottom: 24px; }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary { background-color: #2563eb; color: white; }
+        .btn-primary:hover { background-color: #1d4ed8; }
+        .btn-secondary { background-color: #e5e7eb; color: #374151; }
+        .btn-secondary:hover { background-color: #d1d5db; }
+        
+        .form-group { margin-bottom: 24px; }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .form-input, .form-select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .form-hint { font-size: 12px; color: #6b7280; margin-top: 4px; }
+        
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 24px;
+        }
+        
+        .alert-success { background-color: #d1fae5; color: #065f46; }
+        
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 24px;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+        }
+        
+        .kpi-change {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        
+        .kpi-change.positive { color: #10b981; }
+        .kpi-change.negative { color: #ef4444; }
+        
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; height: auto; position: relative; min-height: auto; }
+            .main { margin-left: 0; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+
+        /* Power BI Analytics Styles */
+        #analytics {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        #analytics .header {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-bottom: 1px solid #334155;
+        }
+
+        #analytics .header h1 {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        #analytics .header p {
+            color: #94a3b8;
+        }
+
+        #analytics .content {
+            background: transparent;
+        }
+
+        #analytics .stat-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid #334155;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #analytics .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+        }
+
+        #analytics .stat-card:hover {
+            border-color: #475569;
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.1);
+            transform: translateY(-4px);
+        }
+
+        #analytics .stat-title {
+            color: #94a3b8;
+        }
+
+        #analytics .stat-value {
+            color: #e2e8f0;
+        }
+
+        #analytics .card {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid #334155;
+            transition: all 0.3s;
+        }
+
+        #analytics .card:hover {
+            border-color: #475569;
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.1);
+        }
+
+        #analytics .card-title {
+            color: #e2e8f0;
+        }
+
+        #analytics .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border: none;
+        }
+
+        #analytics .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+        }
+
+        #analytics .btn-secondary {
+            background-color: #1e293b;
+            border: 1px solid #475569;
+            color: #e2e8f0;
+        }
+
+        #analytics .btn-secondary:hover {
+            background-color: #334155;
+            border-color: #64748b;
+        }
+
+        .analytics-filters {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+
+        .analytics-filter-btn {
+            padding: 10px 20px;
+            border: 1px solid #475569;
+            background-color: #1e293b;
+            color: #e2e8f0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .analytics-filter-btn:hover {
+            background-color: #334155;
+            border-color: #64748b;
+        }
+
+        .analytics-filter-btn.active {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-color: #3b82f6;
+        }
+
+        .funnel-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .funnel-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .funnel-bar {
+            flex: 1;
+            height: 40px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .funnel-label {
+            min-width: 120px;
+            color: #cbd5e1;
+            font-size: 14px;
+        }
+
+        .heatmap {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .heatmap-cell {
+            aspect-ratio: 1;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+        }
+
+        .heatmap-cell:hover {
+            transform: scale(1.1);
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .stat-item {
+            background-color: #0f172a;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .stat-item-label {
+            color: #94a3b8;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .stat-item-value {
+            color: #e2e8f0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; height: auto; position: relative; min-height: auto; }
+            .main { margin-left: 0; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+
+        /* Vapi Call Widget Styles */
+        .vapi-call-button {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .vapi-call-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.6);
+        }
+
+        .vapi-call-button:active {
+            transform: scale(0.95);
+        }
+
+        .vapi-popup {
+            position: fixed;
+            bottom: 100px;
+            right: 24px;
+            width: 350px;
+            height: 450px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            display: none;
+            flex-direction: column;
+            z-index: 999;
+            overflow: hidden;
+            animation: slideUp 0.3s ease;
+        }
+
+        .vapi-popup.active {
+            display: flex;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .vapi-popup-header {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .vapi-popup-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .vapi-close-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .vapi-close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .vapi-popup-content {
+            padding: 24px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .vapi-welcome-text {
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .vapi-start-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        .vapi-start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .vapi-start-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .vapi-end-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        .vapi-end-btn:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        .vapi-status {
+            text-align: center;
+            padding: 16px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-weight: 500;
+        }
+
+        .vapi-status.connecting {
+            color: #f59e0b;
+            background: #fef3c7;
+        }
+
+        .vapi-status.in-call {
+            color: #10b981;
+            background: #d1fae5;
+        }
+
+        .vapi-status.ended {
+            color: #6b7280;
+            background: #f3f4f6;
+        }
+
+        .vapi-error {
+            color: #ef4444;
+            background: #fee2e2;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .vapi-hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <h1>🎧 AI Recruit</h1>
+            <p>Call Agent Dashboard</p>
+            <nav class="nav">
+                <div class="nav-item active" onclick="showPage('dashboard')">
+                    <span>📊 Dashboard</span>
+                </div>
+                <div class="nav-item" onclick="showPage('candidates')">
+                    <span>👥 Candidates</span>
+                </div>
+                <div class="nav-item" onclick="showPage('analytics')">
+                    <span>📈 Analytics</span>
+                </div>
+                <div class="nav-item" onclick="showPage('settings')">
+                    <span>⚙️ Settings</span>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main">
+            <!-- DASHBOARD PAGE -->
+            <div id="dashboard" class="page active">
+                <header class="header">
+                    <h1>Dashboard</h1>
+                    <p>Overview of recruitment activities</p>
+                </header>
+                <div class="content">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-title">Total Candidates</div>
+                            <div class="stat-value">248</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">✅</div>
+                            <div class="stat-title">Approved</div>
+                            <div class="stat-value">156</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">❌</div>
+                            <div class="stat-title">Rejected</div>
+                            <div class="stat-value">92</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">📊</div>
+                            <div class="stat-title">Success Rate</div>
+                            <div class="stat-value">62.9%</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Recent Candidates</h2>
+                            <a class="view-all" onclick="showPage('candidates')">View All →</a>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Skills</th>
+                                    <th>Result</th>
+                                    <th>Confidence</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="candidate-name">John Smith</span></td>
+                                    <td>Python, React, Node.js</td>
+                                    <td><span class="badge badge-approved">Approved</span></td>
+                                    <td>94%</td>
+                                    <td>Mar 04, 2026</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="candidate-name">Sarah Johnson</span></td>
+                                    <td>Java, Spring Boot, SQL</td>
+                                    <td><span class="badge badge-approved">Approved</span></td>
+                                    <td>89%</td>
+                                    <td>Mar 03, 2026</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="candidate-name">Michael Chen</span></td>
+                                    <td>JavaScript, Vue.js</td>
+                                    <td><span class="badge badge-rejected">Rejected</span></td>
+                                    <td>42%</td>
+                                    <td>Mar 03, 2026</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="candidate-name">Emily Davis</span></td>
+                                    <td>C++, System Design</td>
+                                    <td><span class="badge badge-approved">Approved</span></td>
+                                    <td>91%</td>
+                                    <td>Mar 02, 2026</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="candidate-name">Alex Rodriguez</span></td>
+                                    <td>Python, Data Science</td>
+                                    <td><span class="badge badge-pending">Pending</span></td>
+                                    <td>76%</td>
+                                    <td>Mar 02, 2026</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Weekly Trend</h2>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="dashboardChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CANDIDATES PAGE -->
+            <div id="candidates" class="page">
+                <header class="header">
+                    <h1>Candidates</h1>
+                    <p>All recruitment call candidates</p>
+                </header>
+                <div class="content">
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="filterCandidates('all')">All</button>
+                        <button class="btn btn-secondary" onclick="filterCandidates('approved')">Approved</button>
+                        <button class="btn btn-secondary" onclick="filterCandidates('rejected')">Rejected</button>
+                    </div>
+
+                    <div class="card">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Age</th>
+                                    <th>Skills</th>
+                                    <th>Experience</th>
+                                    <th>Result</th>
+                                    <th>Confidence</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="candidatesTable"></tbody>
+                        </table>
+                        <div class="pagination">
+                            <button class="btn btn-secondary" onclick="prevPage()">← Previous</button>
+                            <span id="pageInfo">Showing 1 - 10 of 248</span>
+                            <button class="btn btn-secondary" onclick="nextPage()">Next →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ANALYTICS PAGE -->
+            <div id="analytics" class="page">
+                <header class="header">
+                    <h1>Analytics</h1>
+                    <p>Real-time recruitment insights and performance metrics</p>
+                </header>
+                <div class="content">
+                    <!-- Filters -->
+                    <div class="analytics-filters">
+                        <button class="analytics-filter-btn active" onclick="setAnalyticsFilter('all')">All Time</button>
+                        <button class="analytics-filter-btn" onclick="setAnalyticsFilter('month')">This Month</button>
+                        <button class="analytics-filter-btn" onclick="setAnalyticsFilter('week')">This Week</button>
+                        <button class="analytics-filter-btn" onclick="setAnalyticsFilter('day')">Today</button>
+                    </div>
+
+                    <!-- KPI Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-title">Total Candidates</div>
+                            <div class="stat-value">248</div>
+                            <div class="kpi-change positive">
+                                <span>↑ 12.5%</span>
+                                <span>vs last month</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-title">Approval Rate</div>
+                            <div class="stat-value">62.9%</div>
+                            <div class="kpi-change positive">
+                                <span>↑ 5.2%</span>
+                                <span>vs last month</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-title">Avg Confidence Score</div>
+                            <div class="stat-value">82.4%</div>
+                            <div class="kpi-change positive">
+                                <span>↑ 3.1%</span>
+                                <span>vs last month</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-title">Processing Time</div>
+                            <div class="stat-value">2.3m</div>
+                            <div class="kpi-change positive">
+                                <span>↓ 8.7%</span>
+                                <span>faster than last month</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recruitment Trends Chart -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Recruitment Trends</h2>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="trendChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Charts Grid -->
+                    <div class="grid-2">
+                        <!-- Approval Distribution Donut -->
+                        <div class="card">
+                            <h2 class="card-title">Approval Distribution</h2>
+                            <div class="chart-container">
+                                <canvas id="approvalChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Top Skills Horizontal Bar -->
+                        <div class="card">
+                            <h2 class="card-title">Top Skills</h2>
+                            <div class="chart-container">
+                                <canvas id="skillsChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Recruitment Funnel -->
+                        <div class="card">
+                            <h2 class="card-title">Recruitment Funnel</h2>
+                            <div class="funnel-container">
+                                <div class="funnel-item">
+                                    <div class="funnel-label">Applied</div>
+                                    <div class="funnel-bar" style="width: 100%;">248</div>
+                                </div>
+                                <div class="funnel-item">
+                                    <div class="funnel-label">Screened</div>
+                                    <div class="funnel-bar" style="width: 85%;">210</div>
+                                </div>
+                                <div class="funnel-item">
+                                    <div class="funnel-label">Interviewed</div>
+                                    <div class="funnel-bar" style="width: 65%;">161</div>
+                                </div>
+                                <div class="funnel-item">
+                                    <div class="funnel-label">Approved</div>
+                                    <div class="funnel-bar" style="width: 45%;">112</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Country Distribution -->
+                        <div class="card">
+                            <h2 class="card-title">Geographic Distribution</h2>
+                            <div class="chart-container">
+                                <canvas id="countriesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Confidence Score Distribution -->
+                    <div class="card">
+                        <h2 class="card-title">Confidence Score Distribution</h2>
+                        <div class="chart-container">
+                            <canvas id="confidenceChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Activity Heatmap -->
+                    <div class="card">
+                        <h2 class="card-title">Activity Heatmap (Last 30 Days)</h2>
+                        <div class="heatmap" id="heatmap"></div>
+                        <div class="stats-row">
+                            <div class="stat-item">
+                                <div class="stat-item-label">Peak Day</div>
+                                <div class="stat-item-value">Monday</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-item-label">Avg Daily</div>
+                                <div class="stat-item-value">8.3</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-item-label">Total Activity</div>
+                                <div class="stat-item-value">248</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-item-label">Trend</div>
+                                <div class="stat-item-value" style="color: #10b981;">↑ 12.5%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SETTINGS PAGE -->
+            <div id="settings" class="page">
+                <header class="header">
+                    <h1>Settings</h1>
+                    <p>Configure your Vapi AI call agent</p>
+                </header>
+                <div class="content">
+                    <div style="max-width: 600px;">
+                        <div class="card">
+                            <h2 class="card-title" style="margin-bottom: 24px;">🤖 Vapi Call Agent Configuration</h2>
+                            <form onsubmit="saveVapiSettings(event)">
+                                <div class="form-group">
+                                    <label class="form-label">Vapi Assistant ID</label>
+                                    <input type="text" class="form-input" id="vapiAssistantId" placeholder="e.g., asst_abc123..." required>
+                                    <p class="form-hint">Your Vapi assistant ID from dashboard.vapi.ai</p>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Vapi Public Key</label>
+                                    <input type="text" class="form-input" id="vapiPublicKey" placeholder="e.g., pk_abc123..." required>
+                                    <p class="form-hint">Your Vapi public key (starts with pk_)</p>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label" style="display: flex; align-items: center; gap: 12px;">
+                                        <input type="checkbox" id="vapiEnabled" style="width: auto; height: 20px; cursor: pointer;" checked>
+                                        <span>Enable Call Widget</span>
+                                    </label>
+                                    <p class="form-hint">Show the robot call button on all pages</p>
+                                </div>
+
+                                <div style="background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 16px; border-radius: 6px; margin-bottom: 16px;">
+                                    <p style="color: #1e40af; font-size: 14px; margin: 0;">
+                                        <strong>📝 How to get credentials:</strong><br>
+                                        1. Go to <a href="https://dashboard.vapi.ai" target="_blank" style="color: #2563eb; text-decoration: underline;">dashboard.vapi.ai</a><br>
+                                        2. Create an account and log in<br>
+                                        3. Create an Assistant (give it a name and voice)<br>
+                                        4. Copy the Assistant ID<br>
+                                        5. Go to Settings → API Keys and copy your Public Key
+                                    </p>
+                                </div>
+
+                                <div id="vapiSettingsAlert"></div>
+
+                                <button type="submit" class="btn btn-primary">💾 Save Settings</button>
+                            </form>
+                        </div>
+
+                        <div class="card">
+                            <h2 class="card-title" style="margin-bottom: 16px;">🧪 Test Your Configuration</h2>
+                            <p style="color: #6b7280; margin-bottom: 16px;">
+                                After saving your settings, click the robot icon (🤖) in the bottom-right corner to test your call agent.
+                            </p>
+                            <button class="btn btn-secondary" onclick="testVapiConnection()">Test Connection</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Vapi Call Widget -->
+    <button class="vapi-call-button" id="vapiCallButton" onclick="toggleVapiPopup()">
+        🤖
+    </button>
+
+    <div class="vapi-popup" id="vapiPopup">
+        <div class="vapi-popup-header">
+            <h3>AI Recruitment Assistant</h3>
+            <button class="vapi-close-btn" onclick="toggleVapiPopup()">×</button>
+        </div>
+        <div class="vapi-popup-content">
+            <div>
+                <div class="vapi-welcome-text" id="vapiWelcomeText">
+                    <strong>Welcome to AI Recruitment! 🎧</strong><br><br>
+                    We are an AI-powered recruitment platform that helps companies find the best talent through intelligent voice interviews. Our AI agents conduct professional screening calls, assess candidate skills, and provide detailed analytics. Interested in learning more? Click the button below to speak with our AI recruitment assistant!
+                </div>
+                <div class="vapi-status vapi-hidden" id="vapiStatus"></div>
+                <div class="vapi-error vapi-hidden" id="vapiError"></div>
+            </div>
+            <div>
+                <button class="vapi-start-btn" id="vapiStartBtn" onclick="startVapiCall()">
+                    Start Call
+                </button>
+                <button class="vapi-end-btn vapi-hidden" id="vapiEndBtn" onclick="endVapiCall()">
+                    End Call
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample data for candidates
+        const allCandidates = [
+            { name: 'John Smith', age: 28, skills: 'Python, React, Node.js', experience: '5 years', result: 'approved', confidence: 94, date: '2026-03-04' },
+            { name: 'Sarah Johnson', age: 32, skills: 'Java, Spring Boot, SQL', experience: '8 years', result: 'approved', confidence: 89, date: '2026-03-03' },
+            { name: 'Michael Chen', age: 25, skills: 'JavaScript, Vue.js', experience: '3 years', result: 'rejected', confidence: 42, date: '2026-03-03' },
+            { name: 'Emily Davis', age: 30, skills: 'C++, System Design', experience: '7 years', result: 'approved', confidence: 91, date: '2026-03-02' },
+            { name: 'Alex Rodriguez', age: 27, skills: 'Python, Data Science', experience: '4 years', result: 'pending', confidence: 76, date: '2026-03-02' },
+            { name: 'Lisa Wang', age: 29, skills: 'React, TypeScript', experience: '6 years', result: 'approved', confidence: 88, date: '2026-03-01' },
+            { name: 'David Brown', age: 35, skills: 'Go, Kubernetes', experience: '10 years', result: 'approved', confidence: 95, date: '2026-03-01' },
+            { name: 'Maria Garcia', age: 26, skills: 'PHP, Laravel', experience: '4 years', result: 'rejected', confidence: 38, date: '2026-02-29' },
+            { name: 'James Wilson', age: 31, skills: 'Ruby, Rails', experience: '7 years', result: 'approved', confidence: 87, date: '2026-02-29' },
+            { name: 'Anna Lee', age: 24, skills: 'Flutter, Dart', experience: '2 years', result: 'rejected', confidence: 45, date: '2026-02-28' },
+            { name: 'Robert Taylor', age: 33, skills: 'AWS, DevOps', experience: '9 years', result: 'approved', confidence: 92, date: '2026-02-28' },
+            { name: 'Jennifer Martinez', age: 28, skills: 'Angular, RxJS', experience: '5 years', result: 'approved', confidence: 85, date: '2026-02-27' }
+        ];
+
+        let currentFilter = 'all';
+        let currentPage = 0;
+        const pageSize = 10;
+
+        // Navigation
+        function showPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById(page).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Candidates page
+        function filterCandidates(filter) {
+            currentFilter = filter;
+            currentPage = 0;
+            loadCandidates();
+            
+            document.querySelectorAll('.btn-group .btn').forEach(btn => {
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-secondary');
+            });
+            event.target.classList.remove('btn-secondary');
+            event.target.classList.add('btn-primary');
+        }
+
+        function loadCandidates() {
+            let filtered = allCandidates;
+            if (currentFilter !== 'all') {
+                filtered = allCandidates.filter(c => c.result === currentFilter);
+            }
+
+            const start = currentPage * pageSize;
+            const end = start + pageSize;
+            const page = filtered.slice(start, end);
+
+            const tbody = document.getElementById('candidatesTable');
+            tbody.innerHTML = page.map(c => `
+                <tr>
+                    <td><span class="candidate-name">${c.name}</span></td>
+                    <td>${c.age}</td>
+                    <td>${c.skills}</td>
+                    <td>${c.experience}</td>
+                    <td><span class="badge badge-${c.result}">${c.result.charAt(0).toUpperCase() + c.result.slice(1)}</span></td>
+                    <td>${c.confidence}%</td>
+                    <td>${new Date(c.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('pageInfo').textContent = `Showing ${start + 1} - ${Math.min(end, filtered.length)} of ${filtered.length}`;
+        }
+
+        function nextPage() {
+            currentPage++;
+            loadCandidates();
+        }
+
+        function prevPage() {
+            if (currentPage > 0) {
+                currentPage--;
+                loadCandidates();
+            }
+        }
+
+        // Charts
+        function initCharts() {
+            Chart.register(ChartDataLabels);
+
+            const chartColors = {
+                primary: '#3b82f6',
+                secondary: '#8b5cf6',
+                success: '#10b981',
+                danger: '#ef4444',
+                warning: '#f59e0b'
+            };
+
+            // Dashboard chart
+            new Chart(document.getElementById('dashboardChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Candidates',
+                        data: [12, 19, 15, 25, 22, 18, 24],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            // Trend chart (Analytics)
+            new Chart(document.getElementById('trendChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Jan 1', 'Jan 8', 'Jan 15', 'Jan 22', 'Jan 29', 'Feb 5', 'Feb 12', 'Feb 19', 'Feb 26', 'Mar 4'],
+                    datasets: [
+                        {
+                            label: 'Approved',
+                            data: [45, 52, 48, 65, 59, 70, 78, 85, 92, 98],
+                            borderColor: chartColors.success,
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 5,
+                            pointBackgroundColor: chartColors.success,
+                            pointBorderColor: '#0f172a',
+                            pointBorderWidth: 2
+                        },
+                        {
+                            label: 'Rejected',
+                            data: [20, 25, 22, 28, 24, 30, 32, 35, 38, 40],
+                            borderColor: chartColors.danger,
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 5,
+                            pointBackgroundColor: chartColors.danger,
+                            pointBorderColor: '#0f172a',
+                            pointBorderWidth: 2
+                        },
+                        {
+                            label: 'Pending',
+                            data: [15, 18, 20, 22, 25, 28, 30, 32, 35, 38],
+                            borderColor: chartColors.warning,
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 5,
+                            pointBackgroundColor: chartColors.warning,
+                            pointBorderColor: '#0f172a',
+                            pointBorderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#cbd5e1',
+                                font: { size: 14, weight: 'bold' },
+                                padding: 20
+                            }
+                        },
+                        datalabels: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(100, 116, 139, 0.1)' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+
+            // Approval Distribution Donut
+            new Chart(document.getElementById('approvalChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Approved', 'Rejected', 'Pending'],
+                    datasets: [{
+                        data: [156, 92, 0],
+                        backgroundColor: [chartColors.success, chartColors.danger, chartColors.warning],
+                        borderColor: '#0f172a',
+                        borderWidth: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#cbd5e1', font: { size: 12 }, padding: 15 }
+                        },
+                        datalabels: {
+                            color: '#fff',
+                            font: { weight: 'bold', size: 14 },
+                            formatter: (value) => value
+                        }
+                    }
+                }
+            });
+
+            // Skills chart (Horizontal Bar)
+            new Chart(document.getElementById('skillsChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Python', 'JavaScript', 'Java', 'React', 'Node.js', 'SQL'],
+                    datasets: [{
+                        label: 'Candidates',
+                        data: [45, 38, 32, 28, 25, 22],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(139, 92, 246, 0.8)',
+                            'rgba(16, 185, 129, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(14, 165, 233, 0.8)'
+                        ],
+                        borderRadius: 6,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            color: '#fff',
+                            font: { weight: 'bold' },
+                            anchor: 'end',
+                            align: 'end'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(100, 116, 139, 0.1)' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+
+            // Countries chart
+            new Chart(document.getElementById('countriesChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['USA', 'Canada', 'UK', 'Germany', 'India'],
+                    datasets: [{
+                        label: 'Count',
+                        data: [52, 38, 35, 28, 42],
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderRadius: 6,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            color: '#fff',
+                            font: { weight: 'bold' },
+                            anchor: 'end',
+                            align: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(100, 116, 139, 0.1)' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+
+            // Confidence Score Distribution
+            new Chart(document.getElementById('confidenceChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['60-70%', '70-80%', '80-90%', '90-100%'],
+                    datasets: [{
+                        label: 'Count',
+                        data: [25, 45, 85, 93],
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(16, 185, 129, 0.8)'
+                        ],
+                        borderRadius: 6,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            color: '#fff',
+                            font: { weight: 'bold' },
+                            anchor: 'end',
+                            align: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(100, 116, 139, 0.1)' },
+                            ticks: { color: '#94a3b8' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Heatmap
+        function generateHeatmap() {
+            const heatmap = document.getElementById('heatmap');
+            const data = [8, 12, 5, 15, 9, 11, 7, 14, 6, 10, 13, 8, 9, 12, 11, 7, 14, 10, 8, 15, 9, 12, 6, 11, 13, 8, 10, 14, 7, 9];
+            const maxValue = Math.max(...data);
+
+            data.forEach((value, index) => {
+                const cell = document.createElement('div');
+                cell.className = 'heatmap-cell';
+                const intensity = value / maxValue;
+                const hue = intensity > 0.7 ? 120 : intensity > 0.4 ? 45 : 0;
+                const saturation = intensity * 100;
+                cell.style.backgroundColor = `hsl(${hue}, ${saturation}%, ${40 + intensity * 20}%)`;
+                cell.textContent = value;
+                cell.title = `Day ${index + 1}: ${value} candidates`;
+                heatmap.appendChild(cell);
+            });
+        }
+
+        function setAnalyticsFilter(period) {
+            document.querySelectorAll('.analytics-filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Settings
+        function saveVapiSettings(e) {
+            e.preventDefault();
+            const assistantId = document.getElementById('vapiAssistantId').value.trim();
+            const publicKey = document.getElementById('vapiPublicKey').value.trim();
+            const enabled = document.getElementById('vapiEnabled').checked;
+
+            if (!assistantId || !publicKey) {
+                const alert = document.getElementById('vapiSettingsAlert');
+                alert.innerHTML = '<div class="alert" style="background-color: #fee2e2; color: #991b1b; padding: 12px 16px; border-radius: 6px;">Please fill in all required fields</div>';
+                return;
+            }
+
+            // Save to localStorage
+            localStorage.setItem('vapiAssistantId', assistantId);
+            localStorage.setItem('vapiPublicKey', publicKey);
+            localStorage.setItem('vapiEnabled', enabled ? 'true' : 'false');
+
+            // Reinitialize Vapi with new settings
+            vapiClient = null;
+            initVapi();
+
+            const alert = document.getElementById('vapiSettingsAlert');
+            alert.innerHTML = '<div class="alert alert-success">✅ Vapi settings saved successfully! The robot icon is now active.</div>';
+            setTimeout(() => { alert.innerHTML = ''; }, 3000);
+
+            // Update widget visibility
+            updateVapiWidgetVisibility();
+        }
+
+        function testVapiConnection() {
+            const assistantId = localStorage.getItem('vapiAssistantId');
+            const publicKey = localStorage.getItem('vapiPublicKey');
+
+            if (!assistantId || !publicKey) {
+                alert('❌ Please save your Vapi settings first!');
+                return;
+            }
+
+            alert('✅ Settings found! Click the robot icon (🤖) in the bottom-right corner to start a call.');
+        }
+
+        function loadVapiSettings() {
+            const assistantId = localStorage.getItem('vapiAssistantId') || '';
+            const publicKey = localStorage.getItem('vapiPublicKey') || '';
+            const enabled = localStorage.getItem('vapiEnabled') === 'true';
+
+            document.getElementById('vapiAssistantId').value = assistantId;
+            document.getElementById('vapiPublicKey').value = publicKey;
+            document.getElementById('vapiEnabled').checked = enabled;
+
+            updateVapiWidgetVisibility();
+        }
+
+        function updateVapiWidgetVisibility() {
+            const enabled = localStorage.getItem('vapiEnabled');
+            const callButton = document.getElementById('vapiCallButton');
+
+            // Show button by default (even if not configured)
+            // Only hide if explicitly disabled
+            if (enabled === 'false') {
+                callButton.style.display = 'none';
+                // Close popup if open
+                document.getElementById('vapiPopup').classList.remove('active');
+            } else {
+                callButton.style.display = 'flex';
+            }
+        }
+
+        function initDatabase() {
+            alert('Database initialized successfully!');
+        }
+
+        // Vapi Call Widget Functions
+        let vapiClient = null;
+        let isCallActive = false;
+
+        function toggleVapiPopup() {
+            const popup = document.getElementById('vapiPopup');
+            popup.classList.toggle('active');
+        }
+
+        function initVapi() {
+            const publicKey = localStorage.getItem('vapiPublicKey');
+
+            if (!publicKey) {
+                console.warn('No Vapi public key found');
+                return null;
+            }
+
+            try {
+                // Wait for VapiSDK to be available
+                if (typeof window.VapiSDK !== 'undefined') {
+                    console.log('Initializing Vapi with public key:', publicKey.substring(0, 10) + '...');
+                    vapiClient = new window.VapiSDK(publicKey);
+
+                    // Set up event listeners
+                    vapiClient.on('call-start', () => {
+                        console.log('Call started');
+                        handleCallStart();
+                    });
+
+                    vapiClient.on('call-end', () => {
+                        console.log('Call ended');
+                        handleCallEnd();
+                    });
+
+                    vapiClient.on('message', (message) => {
+                        console.log('Vapi message:', message);
+                        if (message.type === 'transcript') {
+                            console.log(`${message.role}: ${message.transcript}`);
+                        }
+                    });
+
+                    vapiClient.on('error', (error) => {
+                        console.error('Vapi error:', error);
+                        handleCallError(error);
+                    });
+
+                    vapiClient.on('speech-start', () => {
+                        console.log('Speech started');
+                    });
+
+                    vapiClient.on('speech-end', () => {
+                        console.log('Speech ended');
+                    });
+
+                    console.log('Vapi client initialized successfully');
+                    return vapiClient;
+                } else {
+                    console.error('VapiSDK not loaded yet, retrying...');
+                    setTimeout(() => initVapi(), 500);
+                    return null;
+                }
+            } catch (error) {
+                console.error('Failed to initialize Vapi:', error);
+                return null;
+            }
+        }
+
+        function startVapiCall() {
+            const assistantId = localStorage.getItem('vapiAssistantId');
+            const publicKey = localStorage.getItem('vapiPublicKey');
+
+            // Clear previous errors
+            document.getElementById('vapiError').classList.add('vapi-hidden');
+
+            console.log('Starting call with:', { assistantId: assistantId?.substring(0, 10) + '...', publicKey: publicKey?.substring(0, 10) + '...' });
+
+            if (!assistantId || !publicKey) {
+                showVapiError('⚠️ Please configure Vapi settings first. Go to Settings page to add your Vapi Assistant ID and Public Key.');
+                return;
+            }
+
+            // Check if Vapi SDK is loaded
+            if (typeof window.VapiSDK === 'undefined') {
+                showVapiError('❌ Vapi SDK not loaded. Please refresh the page and try again.');
+                console.error('VapiSDK not found on window object');
+                return;
+            }
+
+            try {
+                console.log('VapiSDK found, starting call...');
+
+                // Initialize client if not already done
+                if (!vapiClient) {
+                    console.log('Initializing Vapi client...');
+                    vapiClient = initVapi();
+
+                    // Wait for initialization
+                    if (!vapiClient) {
+                        setTimeout(() => {
+                            if (vapiClient) {
+                                continueStartCall(assistantId);
+                            } else {
+                                showVapiError('❌ Failed to initialize Vapi client. Check console for details.');
+                            }
+                        }, 1000);
+                        return;
+                    }
+                }
+
+                continueStartCall(assistantId);
+            } catch (error) {
+                console.error('Failed to start call:', error);
+                showVapiError('❌ Failed to start call: ' + error.message);
+                document.getElementById('vapiStartBtn').disabled = false;
+                hideVapiStatus();
+            }
+        }
+
+        function continueStartCall(assistantId) {
+            try {
+                // Show connecting status
+                showVapiStatus('Connecting...', 'connecting');
+                document.getElementById('vapiStartBtn').disabled = true;
+
+                // Start the call
+                console.log('Calling vapiClient.start() with assistant:', assistantId);
+                vapiClient.start(assistantId);
+
+                console.log('Call start command sent successfully');
+            } catch (error) {
+                console.error('Failed to start call:', error);
+                showVapiError('❌ Failed to start call: ' + error.message);
+                document.getElementById('vapiStartBtn').disabled = false;
+                hideVapiStatus();
+            }
+        }
+                hideVapiStatus();
+            }
+        }
+
+        function endVapiCall() {
+            if (vapiClient && isCallActive) {
+                try {
+                    vapiClient.stop();
+                } catch (error) {
+                    console.error('Failed to end call:', error);
+                    showVapiError('Failed to end call: ' + error.message);
+                }
+            }
+        }
+
+        function handleCallStart() {
+            isCallActive = true;
+            showVapiStatus('In Call - Speak now!', 'in-call');
+
+            // Hide welcome text and start button
+            document.getElementById('vapiWelcomeText').classList.add('vapi-hidden');
+            document.getElementById('vapiStartBtn').classList.add('vapi-hidden');
+
+            // Show end button
+            document.getElementById('vapiEndBtn').classList.remove('vapi-hidden');
+        }
+
+        function handleCallEnd() {
+            isCallActive = false;
+            showVapiStatus('Call Ended', 'ended');
+
+            // Show welcome text and start button
+            setTimeout(() => {
+                document.getElementById('vapiWelcomeText').classList.remove('vapi-hidden');
+                document.getElementById('vapiStartBtn').classList.remove('vapi-hidden');
+                document.getElementById('vapiStartBtn').disabled = false;
+
+                // Hide end button and status
+                document.getElementById('vapiEndBtn').classList.add('vapi-hidden');
+                hideVapiStatus();
+            }, 2000);
+        }
+
+        function handleCallError(error) {
+            console.error('Vapi call error:', error);
+            showVapiError('Call error: ' + (error.message || 'Unknown error occurred'));
+
+            // Reset UI
+            isCallActive = false;
+            document.getElementById('vapiWelcomeText').classList.remove('vapi-hidden');
+            document.getElementById('vapiStartBtn').classList.remove('vapi-hidden');
+            document.getElementById('vapiStartBtn').disabled = false;
+            document.getElementById('vapiEndBtn').classList.add('vapi-hidden');
+            hideVapiStatus();
+        }
+
+        function showVapiStatus(message, type) {
+            const status = document.getElementById('vapiStatus');
+            status.textContent = message;
+            status.className = 'vapi-status ' + type;
+            status.classList.remove('vapi-hidden');
+        }
+
+        function hideVapiStatus() {
+            document.getElementById('vapiStatus').classList.add('vapi-hidden');
+        }
+
+        function showVapiError(message) {
+            const error = document.getElementById('vapiError');
+            error.textContent = message;
+            error.classList.remove('vapi-hidden');
+        }
+
+        // Initialize
+        loadCandidates();
+        initCharts();
+        generateHeatmap();
+        loadVapiSettings();
+
+        // Initialize Vapi when page loads
+        if (localStorage.getItem('vapiEnabled') === 'true') {
+            initVapi();
+        }
+    </script>
+</body>
+</html>
