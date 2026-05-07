@@ -1,0 +1,39 @@
+{
+  "name": "whatsapp-scholarship-agent",
+  "version": "1.0.0",
+  "description": "AI-powered automation system for collecting and publishing scholarships to WhatsApp/Telegram",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "node --test",
+    "setup": "node src/setup.js"
+  },
+  "keywords": [
+    "scholarship",
+    "ai",
+    "automation",
+    "whatsapp",
+    "telegram",
+    "web-scraping"
+  ],
+  "author": "Sohaib Khattak",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.8",
+    "cheerio": "^1.0.0-rc.12",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "node-cron": "^3.0.3",
+    "openai": "^4.38.5",
+    "pg": "^8.11.5",
+    "puppeteer": "^22.6.5",
+    "whatsapp-web.js": "^1.23.1",
+    "qrcode-terminal": "^0.12.0",
+    "telegraf": "^4.16.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
