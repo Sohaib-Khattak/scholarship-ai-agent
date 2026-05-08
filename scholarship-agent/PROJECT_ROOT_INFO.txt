@@ -1,0 +1,291 @@
+================================================================================
+                    PROJECT ROOT & LANGUAGES INFORMATION
+================================================================================
+
+PROJECT NAME: Scholarship AI Agent
+ROOT DIRECTORY: /mnt/c/Users/MA LAPTOP/OneDrive/Desktop/scholarship-agent
+GITHUB: https://github.com/Sohaib-Khattak/scholarship-ai-agent-
+
+================================================================================
+                    ROOT FILES
+================================================================================
+
+MAIN ROOT FILES:
+1. package.json              - Root workspace configuration
+2. .gitignore               - Git ignore rules
+3. vercel.json              - Vercel deployment config
+4. setup.sh                 - Setup script
+
+DOCUMENTATION (23 files):
+- README.md
+- ARCHITECTURE.md
+- QUICKSTART.md
+- SETUP.md
+- DEPLOYMENT.md
+- And 18 more documentation files
+
+FOLDERS:
+- backend/                  - Backend application
+- frontend/                 - Frontend application
+- .github/                  - GitHub workflows
+
+================================================================================
+                    LANGUAGES & TECHNOLOGIES USED
+================================================================================
+
+PRIMARY LANGUAGES:
+1. JavaScript (Node.js)     - Backend & Frontend
+2. JSX (React)              - Frontend components
+3. SQL                      - Database schema
+4. JSON                     - Configuration files
+5. Markdown                 - Documentation
+6. Shell Script             - Setup automation
+
+================================================================================
+                    BACKEND (Node.js/JavaScript)
+================================================================================
+
+LANGUAGE: JavaScript (ES6+)
+RUNTIME: Node.js 18+
+FRAMEWORK: Express.js
+
+FILES:
+- backend/src/index.js                    - Main server (JavaScript)
+- backend/src/agents/scholarshipHunter.js - AI agent (JavaScript)
+- backend/src/agents/opportunityValidator.js - AI agent (JavaScript)
+- backend/src/agents/contentFormatter.js  - AI agent (JavaScript)
+- backend/src/agents/publisherBot.js      - AI agent (JavaScript)
+- backend/src/database/db.js              - Database module (JavaScript)
+- backend/src/routes/scholarships.js      - API routes (JavaScript)
+- backend/src/routes/approvals.js         - API routes (JavaScript)
+- backend/src/routes/agents.js            - API routes (JavaScript)
+- backend/src/routes/logs.js              - API routes (JavaScript)
+- backend/src/utils/logger.js             - Logger (JavaScript)
+
+CONFIGURATION:
+- backend/package.json                    - Dependencies (JSON)
+- backend/.env.example                    - Environment template
+- backend/schema.sql                      - Database schema (SQL)
+
+DEPENDENCIES:
+- express                   - Web framework
+- openai                    - GPT-4 API
+- axios                     - HTTP client
+- supabase                  - Database client
+- node-cron                 - Scheduling
+- winston                   - Logging
+- cors, helmet, joi         - Security & validation
+
+================================================================================
+                    FRONTEND (React/Next.js/JavaScript)
+================================================================================
+
+LANGUAGE: JavaScript (ES6+) & JSX
+FRAMEWORK: Next.js 14 (React 18)
+STYLING: Tailwind CSS
+
+FILES:
+- frontend/src/pages/index.js             - Main page (JavaScript)
+- frontend/src/pages/published.js         - Published page (JavaScript)
+- frontend/src/pages/analytics.js         - Analytics page (JavaScript)
+- frontend/src/pages/settings.js          - Settings page (JavaScript)
+- frontend/src/pages/contact.js           - Contact page (JavaScript)
+- frontend/src/pages/_app.js              - App wrapper (JavaScript)
+- frontend/src/components/Header.jsx      - Component (JSX)
+- frontend/src/components/StatsCard.jsx   - Component (JSX)
+- frontend/src/components/ScholarshipCard.jsx - Component (JSX)
+- frontend/src/components/Sidebar.jsx     - Component (JSX)
+- frontend/src/utils/store.js             - State management (JavaScript)
+- frontend/src/styles/globals.css         - Styles (CSS)
+
+CONFIGURATION:
+- frontend/package.json                   - Dependencies (JSON)
+- frontend/next.config.js                 - Next.js config (JavaScript)
+- frontend/tailwind.config.js             - Tailwind config (JavaScript)
+- frontend/postcss.config.js              - PostCSS config (JavaScript)
+
+DEPENDENCIES:
+- react                     - UI library
+- react-dom                 - React DOM
+- next                      - React framework
+- axios                     - HTTP client
+- zustand                   - State management
+- lucide-react              - Icons
+- date-fns                  - Date utilities
+- react-hot-toast           - Notifications
+- tailwindcss               - CSS framework
+
+================================================================================
+                    DATABASE (SQL)
+================================================================================
+
+LANGUAGE: SQL (PostgreSQL)
+DATABASE: Supabase (PostgreSQL)
+
+FILES:
+- backend/schema.sql        - Database schema (SQL)
+
+TABLES:
+1. scholarships             - Main data table
+2. agent_logs               - Activity logs
+3. settings                 - Configuration
+
+================================================================================
+                    CONFIGURATION FILES (JSON)
+================================================================================
+
+ROOT:
+- package.json              - Workspace configuration
+- vercel.json               - Vercel deployment config
+
+BACKEND:
+- backend/package.json      - Backend dependencies
+
+FRONTEND:
+- frontend/package.json     - Frontend dependencies
+
+================================================================================
+                    FILE BREAKDOWN BY LANGUAGE
+================================================================================
+
+JavaScript (.js):           25 files
+JSX (.jsx):                 4 files
+JSON (.json):               3 files
+SQL (.sql):                 1 file
+CSS (.css):                 1 file
+Markdown (.md):             17 files
+Text (.txt):                6 files
+Shell (.sh):                1 file
+-----------------------------------
+TOTAL:                      58+ files
+
+================================================================================
+                    MAIN ENTRY POINTS
+================================================================================
+
+BACKEND ENTRY POINT:
+File: backend/src/index.js
+Language: JavaScript (Node.js)
+Purpose: Express server, API routes, cron scheduler
+
+FRONTEND ENTRY POINT:
+File: frontend/src/pages/_app.js
+Language: JavaScript (React/Next.js)
+Purpose: App wrapper, global state
+
+MAIN PAGE:
+File: frontend/src/pages/index.js
+Language: JavaScript (React/Next.js)
+Purpose: Dashboard with approval interface
+
+DATABASE SCHEMA:
+File: backend/schema.sql
+Language: SQL (PostgreSQL)
+Purpose: Database structure
+
+================================================================================
+                    TECHNOLOGY STACK SUMMARY
+================================================================================
+
+BACKEND:
+- Language: JavaScript (ES6+)
+- Runtime: Node.js 18+
+- Framework: Express.js
+- AI: OpenAI GPT-4 API
+- Database: Supabase (PostgreSQL)
+- Messaging: WhatsApp Business API
+
+FRONTEND:
+- Language: JavaScript (ES6+) & JSX
+- Framework: Next.js 14
+- UI Library: React 18
+- Styling: Tailwind CSS
+- State: Zustand
+- Icons: Lucide React
+
+DATABASE:
+- Language: SQL
+- System: PostgreSQL
+- Hosting: Supabase
+
+DEPLOYMENT:
+- Frontend: Vercel
+- Backend: Railway
+- Database: Supabase
+
+================================================================================
+                    CODE STYLE & CONVENTIONS
+================================================================================
+
+JAVASCRIPT:
+- ES6+ syntax (arrow functions, async/await)
+- CommonJS modules (require/module.exports) in backend
+- ES6 modules (import/export) in frontend
+- Async/await for asynchronous operations
+- Error handling with try/catch
+
+REACT/JSX:
+- Functional components
+- React Hooks (useState, useEffect)
+- Zustand for state management
+- Tailwind CSS for styling
+
+NAMING CONVENTIONS:
+- camelCase for variables and functions
+- PascalCase for React components
+- UPPER_CASE for environment variables
+- kebab-case for file names (some files)
+
+================================================================================
+                    PROJECT STRUCTURE
+================================================================================
+
+scholarship-agent/
+├── backend/                    (Node.js/JavaScript)
+│   ├── src/
+│   │   ├── index.js           (JavaScript - Main server)
+│   │   ├── agents/            (JavaScript - AI agents)
+│   │   ├── database/          (JavaScript - DB module)
+│   │   ├── routes/            (JavaScript - API routes)
+│   │   └── utils/             (JavaScript - Utilities)
+│   ├── package.json           (JSON - Dependencies)
+│   ├── schema.sql             (SQL - Database)
+│   └── .env.example           (Environment template)
+│
+├── frontend/                   (React/Next.js/JavaScript)
+│   ├── src/
+│   │   ├── pages/             (JavaScript - Next.js pages)
+│   │   ├── components/        (JSX - React components)
+│   │   ├── utils/             (JavaScript - Utilities)
+│   │   └── styles/            (CSS - Tailwind)
+│   ├── package.json           (JSON - Dependencies)
+│   ├── next.config.js         (JavaScript - Config)
+│   └── tailwind.config.js     (JavaScript - Config)
+│
+├── package.json               (JSON - Root workspace)
+├── vercel.json                (JSON - Deployment)
+├── setup.sh                   (Shell - Setup script)
+└── Documentation/             (Markdown - 23 files)
+
+================================================================================
+                    SUMMARY
+================================================================================
+
+PRIMARY LANGUAGE: JavaScript (Node.js & React)
+SECONDARY LANGUAGES: JSX, SQL, JSON, CSS, Markdown
+TOTAL CODE FILES: 39
+TOTAL DOCUMENTATION: 23
+TOTAL PROJECT FILES: 58+
+
+BACKEND: 100% JavaScript (Node.js)
+FRONTEND: 95% JavaScript/JSX, 5% CSS
+DATABASE: 100% SQL (PostgreSQL)
+CONFIG: 100% JSON
+
+This is a full-stack JavaScript application using:
+- Node.js for backend
+- React/Next.js for frontend
+- PostgreSQL for database
+- All modern JavaScript (ES6+)
+
+================================================================================
